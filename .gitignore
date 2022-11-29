@@ -1,0 +1,7 @@
+# IntelliJ
+.idea/*
+!.idea/suppressions.xml
+!.idea/runConfigurations/*
+*.iml
+
+input
