@@ -15,16 +15,14 @@ def get_input():
     return lines
 
 
-input = get_input()
-
-
-def part1():
+def part1(input):
     return max(sum(i) for i in input)
 
 
-def part2():
+def part2(input):
     return sum(sorted([sum(i) for i in input], reverse=True)[:3])
 
 
-print('Part 1:', part1())
-print('Part 2:', part2())
+inp = get_input()
+print('Part 1:', part1(inp))
+print('Part 2:', part2(inp))
