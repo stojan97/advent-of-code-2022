@@ -1,15 +1,6 @@
 def get_input():
-    shape = {
-        'A': 0,
-        'X': 0,
-        'B': 1,
-        'Y': 1,
-        'C': 2,
-        'Z': 2,
-    }
-
     with open('input') as file:
-        lines = [(shape[line.split()[0]], shape[line.split()[1]]) for line in file]
+        lines = [('ABC'.index(line.split()[0]), 'XYZ'.index(line.split()[1])) for line in file]
     return lines
 
 
