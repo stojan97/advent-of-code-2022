@@ -4,10 +4,7 @@ def get_input():
     return lines
 
 
-input = get_input()
-
-
-def part1():
+def part1(input):
     total = 0
     for first, second in input:
         total += second + 1
@@ -19,7 +16,7 @@ def part1():
     return total
 
 
-def part2():
+def part2(input):
     total = 0
     shift_to_strategy = [2, 0, 1]
     for first, second in input:
@@ -29,5 +26,6 @@ def part2():
     return total
 
 
-print('Part 1:', part1())
-print('Part 2:', part2())
+inp = get_input()
+print('Part 1:', part1(inp))
+print('Part 2:', part2(inp))
