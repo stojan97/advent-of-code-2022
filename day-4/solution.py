@@ -21,9 +21,7 @@ def part1_fully_contain_rule(first, second):
 
 
 def part2_intersection_rule(first, second):
-    mini = max(first[0], second[0])
-    maxi = min(first[1], second[1])
-    return int(mini <= maxi)
+    return int(max(first[0], second[0]) <=  min(first[1], second[1]))
 
 
 inp = get_input()
