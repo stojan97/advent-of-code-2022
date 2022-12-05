@@ -15,9 +15,8 @@ def solve(pairs, get_rule):
 
 
 def part1_fully_contain_rule(first, second):
-    mini = min(first[0], second[0])
-    maxi = max(first[1], second[1])
-    return int((mini == first[0] and maxi == first[1]) or (mini == second[0] and maxi == second[1]))
+    minmax = min(first[0], second[0]), max(first[1], second[1])
+    return int(minmax == first or minmax == second)
 
 
 def part2_intersection_rule(first, second):
