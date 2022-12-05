@@ -28,10 +28,9 @@ def get_input():
 
             lines.append(chunked_stacks)
 
-    lines.reverse()
     stacks = [[] for _ in range(n_stacks)]
 
-    for line in lines:
+    for line in reversed(lines):
         for i in range(len(line)):
             if line[i].isalpha():
                 stacks[i].append(line[i])
