@@ -4,13 +4,27 @@ from typing import List, Union
 
 class TreeNode:
 
-    def __init__(self, name: str, type: str, children: Union[List['TreeNode'], None], parent: Union['TreeNode', None],
+    def __init__(self, name: str, type: str, children: List['TreeNode'], parent: Union['TreeNode', None],
                  size: int = 0) -> None:
         self.name = name
         self.type = type
         self.children = children
         self.size = size
         self.parent = parent
+
+    def calculate_size(self):
+        self.size += sum(child.calculate_size() for child in self.children)
+        return self.size
+
+    def get_size_at_most(self, at_most):
+        t = sum(child.get_size_at_most(at_most) for child in self.children if child.type == 'dir')
+        return self.size + t if self.size <= at_most else t
+
+    def min_disk_space_to_delete(self, rem):
+        children = [child.min_disk_space_to_delete(rem) for child in self.children if child.type == 'dir']
+        min_child = min(children) if len(children) > 0 else math.inf
+        current = self.size if self.size >= rem else math.inf
+        return min(current, min_child)
 
 
 def get_input():
@@ -40,39 +54,21 @@ def get_input():
 
             else:
                 if line[0].isnumeric():
-                    node.children.append(TreeNode(line[1], 'file', None, node, int(line[0])))
+                    node.children.append(TreeNode(line[1], 'file', [], node, int(line[0])))
                 else:
                     node.children.append(TreeNode(line[1], 'dir', [], node))
 
-    def calculate_size(node):
-        if node.type == 'dir':
-            node.size = sum(calculate_size(child) for child in node.children)
-
-        return node.size
-
-    calculate_size(tree)
+    tree.calculate_size()
     return tree
 
 
-def get_size(node):
-    t = sum(get_size(child) for child in node.children if child.type == 'dir')
-    return node.size + t if node.size <= 100_000 else t
-
-
-def min_disk_space_to_delete(node, rem):
-    children = [min_disk_space_to_delete(child, rem) for child in node.children if child.type == 'dir']
-    min_child = min(children) if len(children) > 0 else math.inf
-    current = node.size if node.size >= rem else math.inf
-    return min(current, min_child)
-
-
 def part1(tree):
-    return get_size(tree)
+    return tree.get_size_at_most(100_000)
 
 
 def part2(tree):
     rem = 30_000_000 - (70_000_000 - tree.size)
-    return min_disk_space_to_delete(tree, rem)
+    return tree.min_disk_space_to_delete(rem)
 
 
 tree = get_input()
