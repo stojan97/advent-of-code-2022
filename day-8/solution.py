@@ -20,7 +20,7 @@ def part1(grid):
     total = 4 * (size - 1)
 
     for i in range(1, size - 1):
-        for j in range(1, len(grid[0]) - 1):
+        for j in range(1, size - 1):
             r = any(is_visible_row(i, j, grid, z) for z in get_bounds(i, size))
             c = any(is_visible_col(i, j, grid, z) for z in get_bounds(j, size))
             total += int(r | c)
@@ -75,14 +75,8 @@ def get_scenic_score(i, j, grid):
 
 
 def part2(grid):
-    max_scenic_score = -math.inf
-
-    for i in range(len(grid)):
-        for j in range(len(grid[0])):
-            score = get_scenic_score(i, j, grid)
-            max_scenic_score = max(max_scenic_score, score)
-
-    return max_scenic_score
+    size = len(grid)
+    return max(get_scenic_score(i, j, grid) for i in range(size) for j in range(size))
 
 
 inp = get_input()
