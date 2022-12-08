@@ -38,23 +38,14 @@ def get_input():
     return stacks, moves
 
 
-def part1(stacks, moves):
+def solve(stacks, moves, to_reverse):
     for amount, s1, s2 in moves:
-        for i in range(amount):
-            stacks[s2 - 1].append(stacks[s1 - 1].pop())
-
-    return ''.join(s[-1] for s in stacks)
-
-
-def part2(stacks, moves):
-    for amount, s1, s2 in moves:
-        s1_len = len(stacks[s1 - 1])
-        stacks[s2 - 1] += stacks[s1 - 1][s1_len - amount:]
-        stacks[s1 - 1] = stacks[s1 - 1][:s1_len - amount]
+        stacks[s2 - 1] += to_reverse(stacks[s1 - 1][-amount:])
+        stacks[s1 - 1] = stacks[s1 - 1][:-amount]
 
     return ''.join(s[-1] for s in stacks)
 
 
 inp = get_input()
-print('Part 1:', part1(deepcopy(inp[0]), inp[1]))
-print('Part 2:', part2(inp[0], inp[1]))
+print('Part 1:', solve(deepcopy(inp[0]), inp[1], lambda s: reversed(s)))
+print('Part 2:', solve(inp[0], inp[1], lambda s: s))
