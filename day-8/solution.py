@@ -28,10 +28,6 @@ def part1(grid):
     return total
 
 
-def get_row_score():
-    t = 1
-
-
 def get_scenic_score(i, j, grid):
     size = len(grid)
     # top
