@@ -30,8 +30,8 @@ def part1(grid):
 
 def get_scenic_score(i, j, grid):
     size = len(grid)
-    # top
     s1, s2, s3, s4 = 0, 0, 0, 0
+    # top
     blocked = False
     for x in range(i - 1, -1, -1):
         if x < 0 or blocked:
