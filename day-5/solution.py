@@ -38,9 +38,9 @@ def get_input():
     return stacks, moves
 
 
-def solve(stacks, moves, to_reverse):
+def solve(stacks, moves, order):
     for amount, s1, s2 in moves:
-        stacks[s2 - 1] += to_reverse(stacks[s1 - 1][-amount:])
+        stacks[s2 - 1] += order(stacks[s1 - 1][-amount:])
         stacks[s1 - 1] = stacks[s1 - 1][:-amount]
 
     return ''.join(s[-1] for s in stacks)
