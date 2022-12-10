@@ -2,7 +2,6 @@ def get_input():
     with open('input') as file:
         lines = [line.strip().split(' ') for line in file]
 
-    print(lines)
     return lines
 
 
