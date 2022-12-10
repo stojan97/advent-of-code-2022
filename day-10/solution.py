@@ -22,7 +22,7 @@ def perform_operation(crt, cycle, total, x):
     total += add_total(x, cycle)
     crt += add_new_line(cycle)
     crt += resolve_pixel(x, cycle)
-    return crt, total
+    return crt, total, cycle
 
 
 def solve(instructions):
@@ -32,12 +32,10 @@ def solve(instructions):
     crt = ''
 
     for ins in instructions:
-        cycle += 1
-        crt, total = perform_operation(crt, cycle, total, x)
+        crt, total, cycle = perform_operation(crt, cycle + 1, total, x)
 
         if ins[0] == 'addx':
-            cycle += 1
-            crt, total = perform_operation(crt, cycle, total, x)
+            crt, total, cycle = perform_operation(crt, cycle + 1, total, x)
             x += int(ins[1])
 
     return total, crt
