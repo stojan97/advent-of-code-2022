@@ -17,12 +17,12 @@ class Monkey:
     def operation(self, old):
         return eval(self.op)
 
-    def calculate_throw(self, do_additional_operation, mod):
+    def calculate_throws(self, part, mod):
         throws = []
         while self.items:
             item = self.items.popleft()
             item = self.operation(item)
-            item = do_additional_operation(item, mod)
+            item = item // 3 if part == 1 else item % mod
             throw = self.true_throw if item % self.div == 0 else self.false_throw
             throws.append((item, throw))
 
@@ -52,17 +52,17 @@ def get_input():
     return mod, monkeys
 
 
-def solve(inp, n, do_additional_operation):
+def solve(inp, n, part):
     mod, monkeys = inp
 
     for r in range(n):
         for i in range(len(monkeys)):
-            throws = monkeys[i].calculate_throw(do_additional_operation, mod)
+            throws = monkeys[i].calculate_throws(part, mod)
             for item, throw in throws:
                 monkeys[throw].items.append(item)
 
     return prod(sorted([m.inspects for m in monkeys])[-2:])
 
 
-print('Part 1:', solve(get_input(), 20, lambda i, mod: i // 3))
-print('Part 2:', solve(get_input(), 10_000, lambda i, mod: i % mod))
+print('Part 1:', solve(get_input(), 20, 1))
+print('Part 2:', solve(get_input(), 10_000, 2))
