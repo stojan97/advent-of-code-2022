@@ -44,29 +44,21 @@ class Monkey:
         self.inspects = 0
         self.multiplicand = multiplicand
 
-    def add_operation(self, old):
-        if self.multiplicand:
-            return [self.op, self.multiplicand]
-
-        if self.op == '+':
-            return ['+', -1]
-
-        return ['*', -1]
+    def get_operation(self):
+        mul = self.multiplicand if self.multiplicand else -1
+        return [self.op, mul]
 
     def calculate_throws(self):
         throws = []
         while self.items:
             expression = self.items.popleft()
-            expression.elements += self.add_operation(expression)
+            expression.elements += self.get_operation()
             value = expression.calculate_value(self.div)
             throw = self.true_throw if value % self.div == 0 else self.false_throw
             throws.append((expression, throw))
 
         self.inspects += len(throws)
         return throws
-
-    def __repr__(self):
-        return f'monkey items {self.items}'
 
 
 def get_last_from_split(s):
@@ -104,9 +96,5 @@ def solve(inp, n, part):
     return prod(sorted([m.inspects for m in monkeys])[-2:])
 
 
-_ = get_input()
-start = time.time()
 # around 2 secs for my puzzle input
-print('Part 2:', solve(_, 10_000, 2))
-print(time.time() - start)
-# print('Part 2:', solve(get_input(), 10_000, 2))
+print('Part 2:', solve(get_input(), 10_000, 2))
