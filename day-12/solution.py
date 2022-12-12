@@ -64,14 +64,14 @@ def part1(input):
 
 def part2(input):
     start, end, grid = input
-    fewest_from_everywhere = math.inf
+    fewest = math.inf
 
     for i in range(len(grid)):
         for j in range(len(grid[0])):
             if grid[i][j] == 1:
-                fewest_from_everywhere = min(fewest_from_everywhere, fewest_steps((i, j), end, grid))
+                fewest = min(fewest, fewest_steps((i, j), end, grid))
 
-    return fewest_from_everywhere
+    return fewest
 
 
 input = get_input()
