@@ -7,7 +7,8 @@ from typing import Deque, Callable
 
 class Monkey:
 
-    def __init__(self, items: Deque[int], op: Callable, multiplicand: int | None, div: int, true_throw: int, false_throw: int):
+    def __init__(self, items: Deque[int], op: Callable, multiplicand: int | None, div: int, true_throw: int,
+                 false_throw: int):
         self.items = items
         self.op = op
         self.div = div
@@ -36,10 +37,13 @@ class Monkey:
 def get_last_from_split(s):
     return int(s.split(' ')[-1])
 
+
 op_resolve = {
     '*': lambda x, y: x * y,
     '+': lambda x, y: x + y
 }
+
+
 def get_input():
     with open('input') as file:
         lines = [line.strip() for line in file]
