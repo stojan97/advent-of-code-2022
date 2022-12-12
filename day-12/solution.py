@@ -20,13 +20,7 @@ def get_input():
 
             grid[i][j] = ord(grid[i][j]) - 96
 
-    for i in range(1, 27):
-        LETTERS.append(chr(i + 96))
-
     return start, end, grid
-
-
-LETTERS = []
 
 
 def dirs(pos):
