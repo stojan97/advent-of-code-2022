@@ -70,7 +70,6 @@ def get_input():
         lines = [line.strip() for line in file]
 
     monkeys = []
-    mod = 1
     for i in range(0, len(lines), 7):
         items = deque([Expression([int(i)]) for i in re.findall(r'[+-]?\d+', lines[i + 1])])
         op = lines[i + 2].split(' ')[-2:]
@@ -78,14 +77,13 @@ def get_input():
         div = get_last_from_split(lines[i + 3])
         true_throw = get_last_from_split(lines[i + 4])
         false_throw = get_last_from_split(lines[i + 5])
-        mod = lcm(mod, div)
         monkeys.append(Monkey(items, op[0], multiplicand, div, true_throw, false_throw))
 
-    return mod, monkeys
+    return monkeys
 
 
-def solve(inp, n, part):
-    mod, monkeys = inp
+def solve(inp, n):
+    monkeys = inp
 
     for r in range(n):
         for i in range(len(monkeys)):
@@ -97,4 +95,4 @@ def solve(inp, n, part):
 
 
 # around 2 secs for my puzzle input
-print('Part 2:', solve(get_input(), 10_000, 2))
+print('Part 2:', solve(get_input(), 10_000))
