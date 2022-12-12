@@ -1,4 +1,3 @@
-import math
 from collections import deque
 
 
@@ -7,20 +6,25 @@ def get_input():
         grid = [list(line.strip()) for line in file]
 
     start, end = (0, 0), (0, 0)
+    ends = []
 
     for i in range(len(grid)):
         for j in range(len(grid[0])):
+
             if grid[i][j] == 'S':
                 grid[i][j] = 'a'
-                start = i, j
+                end = i, j
+
+            if grid[i][j] == 'a':
+                ends.append((i, j))
 
             if grid[i][j] == 'E':
                 grid[i][j] = 'z'
-                end = i, j
+                start = i, j
 
-            grid[i][j] = ord(grid[i][j]) - 96
+            grid[i][j] = 27 - (ord(grid[i][j]) - 96)
 
-    return start, end, grid
+    return start, end, ends, grid
 
 
 def dirs(pos):
@@ -28,46 +32,29 @@ def dirs(pos):
     return [(i - 1, j), (i + 1, j), (i, j - 1), (i, j + 1)]
 
 
-def fewest_steps(start, end, grid):
-    q = deque([(start, 0)])
+def solve(input):
+    start, end, ends, grid = input
+    q = deque([start])
     rows = len(grid)
     cols = len(grid[0])
-    visited = set()
-    visited.add(start)
+    min_dist = {start: 0}
 
     while q:
-        pos, dist = q.popleft()
-        if pos == end:
-            return dist
+        pos = q.popleft()
+        dist = min_dist[pos]
 
         for p in dirs(pos):
-            if p in visited:
+            if p in min_dist:
                 continue
 
             if 0 <= p[0] < rows and 0 <= p[1] < cols and grid[p[0]][p[1]] <= grid[pos[0]][pos[1]] + 1:
-                visited.add(p)
-                q.append((p, dist + 1))
+                min_dist[p] = dist + 1
+                q.append(p)
 
-    return math.inf
-
-
-def part1(input):
-    start, end, grid = input
-    return fewest_steps(start, end, grid)
-
-
-def part2(input):
-    start, end, grid = input
-    fewest = math.inf
-
-    for i in range(len(grid)):
-        for j in range(len(grid[0])):
-            if grid[i][j] == 1:
-                fewest = min(fewest, fewest_steps((i, j), end, grid))
-
-    return fewest
+    return min_dist[end], min(min_dist[e] for e in ends if e in min_dist)
 
 
 input = get_input()
-print('Part 1:', part1(input))
-print('Part 2:', part2(input))
+part1, part2 = solve(input)
+print('Part 1:', part1)
+print('Part 2:', part2)
