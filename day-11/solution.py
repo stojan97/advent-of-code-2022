@@ -77,6 +77,5 @@ def solve(inp, n, part):
     return prod(sorted([m.inspects for m in monkeys])[-2:])
 
 
-_ = get_input()
-print('Part 1:', solve(_, 20, 1))
+print('Part 1:', solve(get_input(), 20, 1))
 print('Part 2:', solve(get_input(), 10_000, 2))
