@@ -79,7 +79,4 @@ def solve(inp, n, part):
 
 _ = get_input()
 print('Part 1:', solve(_, 20, 1))
-start = time.time()
-# execution around 3 ms
 print('Part 2:', solve(get_input(), 10_000, 2))
-print(time.time() - start)
