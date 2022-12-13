@@ -10,10 +10,6 @@ def get_input():
     return pairs
 
 
-def to_tuple(p1, p2):
-    return str(p1), str(p2)
-
-
 def is_in_order(pair1, pair2):
     if pair1 is None or pair2 is None:
         return False
