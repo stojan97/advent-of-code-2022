@@ -70,20 +70,14 @@ def part1(pairs):
 
 
 def part2(pairs):
-    all = [[[2]], [[6]]]
-
+    all = []
     for p in pairs:
         all.append(p[0])
         all.append(p[1])
 
-    all = sorted(all, key=cmp_to_key(is_in_order))
-
-    total = 1
-    for idx, r in enumerate(all):
-        if r == [[6]] or r == [[2]]:
-            total *= idx + 1
-
-    return total
+    p1 = sum(is_in_order([[2]], x) > 0 for x in all) + 1
+    p2 = sum(is_in_order([[6]], x) > 0 for x in all) + 2
+    return p1 * p2
 
 
 inp = get_input()
