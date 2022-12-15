@@ -1,5 +1,4 @@
 from collections import deque
-from functools import cmp_to_key
 
 
 def get_input():
@@ -54,17 +53,6 @@ def is_in_order(pair1, pair2):
     return 0
 
 
-def part1(pairs):
-    total = 0
-
-    for index, pair in enumerate(pairs):
-        pair1, pair2 = pair[0], pair[1]
-        order = is_in_order(pair1, pair2)
-        total += index + 1 if order == -1 else 0
-
-    return total
-
-
 def part2(pairs):
     all = []
     for p in pairs:
@@ -77,5 +65,4 @@ def part2(pairs):
 
 
 inp = get_input()
-print('Part 1:', part1(inp))
 print('Part 2:', part2(inp))
