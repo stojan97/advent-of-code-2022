@@ -1,3 +1,6 @@
+import time
+
+
 def comp(a, b):
     if a == b:
         return 0
@@ -73,12 +76,11 @@ def inside(i, prev_row):
 
 def not_covered_by_rocks(point, rocks):
     col, row = point
-    row -= 1
 
-    is_not_covered = any((i, row) not in rocks and inside(i, row) for i in range(col - 1, col + 2))
+    is_not_covered = any((i, row - 1) not in rocks and inside(i, row - 1) for i in range(col - 1, col + 2))
     if not is_not_covered:
         # count covered air as rocks
-        rocks.add((col, row + 1))
+        rocks.add((col, row))
 
     return is_not_covered
 
