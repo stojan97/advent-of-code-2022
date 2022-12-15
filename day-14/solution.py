@@ -87,7 +87,7 @@ def should_count(i, j, rocks):
 
 
 def part2(rocks):
-    # using pascal triangle
+    # using triangle
     last_row = max(k[1] for k in rocks) + 2
     c = 1
     for j in range(1, last_row):
