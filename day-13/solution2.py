@@ -54,6 +54,7 @@ def is_in_order(pair1, pair2):
 
 
 def part2(pairs):
+    # two pointers solution
     all = []
     for p in pairs:
         all.append(p[0])
