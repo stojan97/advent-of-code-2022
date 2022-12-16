@@ -57,8 +57,7 @@ def get_answer_from_intervals(intervals):
 def get_interval_from_row(sensor, row):
     x, y, coverage = sensor
 
-    intersecting_point = (row, y)
-    distance = dist((x, y), intersecting_point)
+    distance = abs(x - row)
 
     if distance > coverage:
         return None
