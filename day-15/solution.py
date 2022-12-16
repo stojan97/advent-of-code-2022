@@ -25,7 +25,6 @@ def get_input():
 
 
 def get_merged_intervals(intervals):
-    # print(intervals)
     intervals.sort()
     merged = []
 
@@ -42,6 +41,19 @@ def get_merged_intervals(intervals):
     return merged
 
 
+def get_answer_from_intervals(intervals):
+    intervals.sort()
+    prev_end = intervals[0][1]
+
+    for start, end in intervals[1:]:
+        if start > prev_end:
+            return prev_end + 1
+
+        prev_end = max(prev_end, end)
+
+    return None
+
+
 def get_interval_from_row(sensor, row):
     x, y, coverage = sensor
 
@@ -56,58 +68,39 @@ def get_interval_from_row(sensor, row):
     return y - spread, y + spread
 
 
-def prepare_intervals(sensors, row, adjust):
+def get_intervals(sensors, row, merge_callback):
     intervals = []
     for sensor in sensors:
         interval = get_interval_from_row(sensor, row)
         if interval:
-            intervals.append(adjust(interval))
+            intervals.append(interval)
 
-    return intervals
-
-
-def get_intervals(sensors, row, adjust):
-    intervals = prepare_intervals(sensors, row, adjust)
-    return get_merged_intervals(intervals)
+    return merge_callback(intervals)
 
 
 def part1(input):
     sensors, beacons = input
     row = 2_000_000
-    merged_intervals = get_intervals(sensors, row, lambda i: i)
+    merged_intervals = get_intervals(sensors, row, lambda intervals: get_merged_intervals(intervals))
     spread_intervals = sum(m_interval[1] - m_interval[0] + 1 for m_interval in merged_intervals)
     beacons_on_row = sum(int(beacon[0] == row) for beacon in beacons)
 
     return spread_intervals - beacons_on_row
 
 
-def part2_alternative(input):
-    sensors, beacons = input
-    limit = 4_000_000
-    tuning_freq_mul = 4_000_000
-
-    for sensor in sensors:
-        touching_point = sensor.get_point_if_touching(sensors, limit)
-        if touching_point:
-            print(sensor, touching_point)
-            return touching_point[1] * tuning_freq_mul + touching_point[0]
-
-    return -1
-
-
 def part2(input):
     sensors, beacons = input
     limit = 4_000_000
     tuning_freq_mul = 4_000_000
-    adjust = lambda i: (max(i[0], 0), min(i[1], limit))
+    merge = lambda i: get_answer_from_intervals(i)
 
     for row in range(limit + 1):
-        intervals = get_intervals(sensors, row, adjust)
+        answer = get_intervals(sensors, row, merge)
         if row % 100_000 == 0:
-            print(f'Row: {row} ::: intervals={intervals}')
+            print(f'Row: {row} ::: answer={answer}')
 
-        if len(intervals) == 2 and intervals[0][1] + 2 == intervals[1][0]:
-            return (intervals[0][1] + 1) * tuning_freq_mul + row
+        if answer:
+            return answer * tuning_freq_mul + row
 
     return -1
 
@@ -115,6 +108,6 @@ def part2(input):
 inp = get_input()
 print('Part 1:', part1(inp))
 start = time.time()
-# 50 secs
+# 30 secs
 print('Part 2:', part2(inp))
 print(time.time() - start)
