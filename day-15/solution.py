@@ -26,13 +26,9 @@ def get_input():
 
 def get_merged_intervals(intervals):
     intervals.sort()
-    merged = []
+    merged = [intervals[0]]
 
-    for interval in intervals:
-        if not merged:
-            merged.append(interval)
-            continue
-
+    for interval in intervals[1:]:
         if interval[0] <= merged[-1][1]:
             merged[-1] = (merged[-1][0], max(merged[-1][1], interval[1]))
         else:
