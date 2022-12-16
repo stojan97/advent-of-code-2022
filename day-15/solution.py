@@ -103,6 +103,6 @@ def part2(input):
 inp = get_input()
 print('Part 1:', part1(inp))
 start = time.time()
-# 30 secs
+# 17-20 secs
 print('Part 2:', part2(inp))
 print(time.time() - start)
