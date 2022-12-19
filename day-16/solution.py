@@ -43,10 +43,9 @@ def get_input():
     # init planar graph
     shortest_paths = []
     map_to_idx = {}
-    # go through each node with flow
-    idx = 0
-    # shortest_path_to_other_for_valve('AA', graph)
 
+    idx = 0
+    # find the shortest path for each node with flow rate
     for key, value in graph.items():
         if value[0] != 0:
             shortest_paths.append(shortest_path_to_other_for_valve(key, graph))
@@ -68,16 +67,11 @@ def get_input():
         final_graph.append((valve, start_time + 1, pressure, adj))
 
     print('Graph length', len(final_graph))
-    return final_graph
+    return graph, map_to_idx, final_graph
 
 
-def find_max_remaining_cost(current, graph):
-    idx, time, time_spent, pressure, bitmask, path = current
-
-    # open valve
-    if path != '':
-        path += '->'
-    path += graph[idx][0]
+def find_max_remaining_cost_p1(current, graph):
+    idx, time, time_spent, pressure, bitmask = current
 
     flow = time_spent * pressure
     pressure += graph[idx][2]
@@ -88,7 +82,8 @@ def find_max_remaining_cost(current, graph):
     for i, t in graph[idx][3]:
         next_time = time + t
         if not (bitmask & (1 << i)) and next_time <= 30:
-            ans = max(ans, flow + find_max_remaining_cost((i, next_time, t, pressure, bitmask | 1 << i, path), graph))
+            ans = max(ans,
+                      flow + find_max_remaining_cost_p1((i, next_time, t, pressure, bitmask | 1 << i), graph))
 
     return ans
 
@@ -97,84 +92,71 @@ def part1(graph):
     mask = 1 << len(graph)
     ans = 0
     for idx, node in enumerate(graph):
-        ans = max(ans, find_max_remaining_cost((idx, node[1], node[1], 0, mask | 1 << idx, ''), graph))
+        ans = max(ans, find_max_remaining_cost_p1((idx, node[1], node[1], 0, mask | 1 << idx, ''), graph))
 
     return ans
 
 
-def find_max_cost(current, graph):
-    p_idx, e_idx, time, flow, pressure, rem_p, rem_e, bitmask_covered, bitmask_opened, path1, path2 = current
+id = 0
+az = 0
 
-    p_idx, e_idx, time, flow, pressure, rem_p, rem_e, bitmask_rem, path1, path2 = q.popleft()
-    id += 1
 
-    if time > 26:
-        continue
+def find_max_remaining_cost(current, graph, dp):
+    p_idx, e_idx, time, time_left, pressure, rem_p, rem_e, bitmask_covered = current
 
-    if p_idx is not None:
-        if path1 != '':
-            path1 += '->'
-        path1 += graph[p_idx][0]
+    memo = (p_idx, e_idx, time_left, bitmask_covered)
 
-    if e_idx is not None:
-        if path2 != '':
-            path2 += '->'
-        path2 += graph[e_idx][0]
+    global id
+    global az
+
+    # flow until this minute
+    flow = time_left * pressure
+
+    if memo in dp:
+        if id % 500_000 == 0:
+            print(f'DP HIT {id} :: size={len(dp)}, ans={az}')
+        id += 1
+        return dp[memo]
 
     person_opens = p_idx is not None and rem_p == 0
     elephant_opens = e_idx is not None and rem_e == 0
 
+    # calculate pressure for next flow
+
     if person_opens:
         pressure += graph[p_idx][2]
-
-    #
-    # if p_idx == 5 and e_idx == 2:
-    #     print(
-    #         f'{id}: AFTER OPEN VALVE: == Minute {time} == person_path={path1}, elephant_path={path2}, flow={flow}, until_26_flow={flow + (26 - time) * pressure}, pressure={pressure}, bitmask_rem={bitmask_rem}')
 
     if elephant_opens:
         pressure += graph[e_idx][2]
 
-    # print(
-    #     f'{id}: == Minute {time} == person_path={path1}, elephant_path={path2}, remaining_person={rem_p}, remaining_elephant={rem_e} flow={flow}, until_26_flow={flow + (26 - time) * pressure}, pressure={pressure}, bitmask_rem={bitmask_rem}')
+    # calculate until the end the next pressure
+    ans = (26 - time) * pressure
 
-    # dp(time, last_node, remaining_bitmask) = memo
-
-    total_pressure = flow + (26 - time) * pressure
-
-    if id % 1_000_000 == 0:
-        print(
-            f'{id}: == Minute {time} :: person_path={path1}, elephant_path={path2}, remaining_time_person={rem_p}, remaining_time_elephant={rem_e} flow={flow}, until_26_flow={flow + (26 - time) * pressure}, pressure={pressure}, bitmask_rem={bitmask_rem}')
-        print(ans)
-
-    ans = max(ans, total_pressure)
-
-    if path1.startswith('JJ') and path2.startswith('DD->HH->HH->EE'):
-        print(
-            f'== Minute {time} :: person_path={path1}, elephant_path={path2}, remaining_time_person={rem_p}, remaining_time_elephant={rem_e} flow={flow}, until_26_flow={flow + (26 - time) * pressure}, pressure={pressure}, bitmask_rem={bitmask_rem}')
-
-    none_replacement = [(None, math.inf)]
+    finished = [(None, math.inf)]
 
     if rem_p > 0:
         person_next = [(p_idx, rem_p)]
     else:
         person_next = [(i, t) for i, t in graph[p_idx][3] if
-                       not (bitmask_rem & (1 << i))] if p_idx is not None else []
+                       not (bitmask_covered & (1 << i))] if p_idx is not None else []
 
     if rem_e > 0:
         elephant_next = [(e_idx, rem_e)]
     else:
         elephant_next = [(i, t) for i, t in graph[e_idx][3] if
-                         not (bitmask_rem & (1 << i))] if e_idx is not None else []
+                         not (bitmask_covered & (1 << i))] if e_idx is not None else []
 
     if not person_next and not elephant_next:
-        continue
+        ans = flow + ans
+        dp[memo] = ans
+        az = max(az, ans)
+        return ans
 
     if not person_next:
-        person_next = none_replacement
+        person_next = finished
 
     if not elephant_next:
-        elephant_next = none_replacement
+        elephant_next = finished
 
     # if path1.startswith('JJ->JJ->BB->CC') and path2.startswith('DD->HH->HH->EE'):
     #     print(person_next, elephant_next)
@@ -185,120 +167,135 @@ def find_max_cost(current, graph):
         if i != j and next_time <= 26:
             mask_i = (1 << i) if i is not None else 0
             mask_j = (1 << j) if j is not None else 0
+            next = (i, j, next_time, t, pressure, t1 - t, t2 - t, bitmask_covered | mask_i | mask_j)
+            ans = max(ans, find_max_remaining_cost(next, graph, dp))
 
-            next = (i, j, next_time, t, pressure, t1 - t, t2 - t, bitmask_rem | mask_i | mask_j, path1, path2)
-
+    # if path1.startswith('JJ') and path2.startswith('DD'):
+    #
+    #     print(
+    #         f'== Minute {time} RES={app} :: person_path={path1}, elephant_path={path2}, remaining_time_person={rem_p}, remaining_time_elephant={rem_e} flow={flow}, until_26_flow={ans}, pressure={pressure}, bitmask_covered={bitmask_covered}')
 
     # f(current) = flow + f(adj, t + 1)
-    # f(last_node, bitmask, t) = last_node with next set bitmask, at time t
+    # f(person_node, elephant_node, bitmask, t) = last_node with next set bitmask, at time t
+    ans = flow + ans
+    dp[memo] = ans
+    az = max(az, ans)
     return ans
 
 
-def part2(graph):
-    mask = 1 << len(graph)
-    full_mask = (1 << (len(graph) + 1)) - 1
+def min_time(current, graph, dp, map_to_idx):
+    p, e, time, pressure, bitmask = current
+
+    memo = (p, e, time, bitmask)
+
+    if time == 9 and p == 'CC' and e == 'FF':
+        print(current)
+
+    global id
+    global az
+
+    if memo in dp:
+        if id % 100_000 == 0:
+            print(f'DP HIT {id} :: size={len(dp)}, ans={az}')
+        id += 1
+        return dp[memo]
+
+    valve_flow_p = graph[p][0]
+    adj_p = graph[p][1]
+
+    valve_flow_e = graph[e][0]
+    adj_e = graph[e][1]
+
+    person_next = [(i, 0) for i in adj_p]
+    elephant_next = [(i, 0) for i in adj_e]
+
+    if valve_flow_p > 0 and not (bitmask & (1 << map_to_idx[p])):
+        # open valve in next move
+        person_next.append((p, valve_flow_p))
+
+    if valve_flow_e > 0 and not (bitmask & (1 << map_to_idx[e])):
+        elephant_next.append((e, valve_flow_e))
+
+    # if path1.startswith('JJ->JJ->BB->CC') and path2.startswith('DD->HH->HH->EE'):
+    #     print(person_next, elephant_next)
+    ans = 0
+
+    for (i, p1), (j, p2) in product(person_next, elephant_next):
+
+        if i != j and time + 1 <= 26:
+            next_pressure = pressure + p1 + p2
+            mask_i = 1 << map_to_idx[i] if p1 > 0 else 0
+            mask_j = 1 << map_to_idx[j] if p2 > 0 else 0
+
+            next = (i, j, time + 1, next_pressure, bitmask | mask_i | mask_j)
+            ans = max(ans, min_time(next, graph, dp, map_to_idx))
+
+    flow = pressure + ans
+    az = max(az, flow)
+    dp[memo] = flow
+    return flow
+
+    # flow, pressure, node, t, bitmask = heappop(pq)
+
+    # if largest_mask == bitmask:
+    #     ans = min(ans, flow + (30 - t) * pressure)
+    #     # if idx % 100_000 == 0:
+    #     #     pass
+    #     # print('All valves opened', flow, pressure, ans, idx, node, t, bitmask)
+    #     # print(len(q))
+    #     # idx += 1
+    #     continue
+    #
+    # if t == 30:
+    #     ans = min(ans, flow)
+    #     # if idx2 % 100_000 == 0:
+    #     #     pass
+    #     # print('T == 30', flow, pressure, ans, idx, node, t, bitmask)
+    #     # idx2 += 1
+    #     # print(len(q))
+    #     continue
+    #
+    # next_flow = flow + pressure
+    #
+    # valve_flow = graph[node][0]
+    # adj = graph[node][1]
+    # index = graph[node][2]
+    #
+    # # open current valve
+    # if not (bitmask & (1 << index)):
+    #     next_pressure = pressure - valve_flow
+    #     # heappush(pq, (next_flow + next_pressure, next_pressure, node, t + 1, bitmask | (1 << index)))
+    #     q.append((next_flow, next_pressure, node, t + 1, bitmask | (1 << index)))
+    # else:
+    #     # move to other valve if the current is open
+    #     for next in adj:
+    #         # heappush(pq, (next_flow, pressure, next, t + 1, bitmask))
+    #         q.append((next_flow, pressure, next, t + 1, bitmask))
+
+
+def part2(inp):
+    graph, map_to_idx, final_graph = inp
+    mask = 1 << len(final_graph)
+    full_mask = (1 << (len(final_graph) + 1)) - 1
     print(mask, full_mask)
     ans = 0
     print('Graph', graph)
+    print('MAP', map_to_idx)
 
-    for i, person in enumerate(graph):
-        # for elephant
-        for j, elephant in enumerate(graph):
-            if i != j:
-                # p_idx, e_idx, time, flow, pressure, rem_p, rem_e, bitmask_rem, valve_p, valve_e, path1, path2
-                t = min(person[1], elephant[1])
-                cost = find_max_cost(
-                    (i, j, t, 0, 0, person[1] - t, elephant[1] - t, mask | 1 << i | 1 << j, mask, '', ''))
-                ans = max(ans, cost)
-    #
-    # while q:
-    #     p_idx, e_idx, time, flow, pressure, rem_p, rem_e, bitmask_rem, path1, path2 = q.popleft()
-    #     id += 1
-    #
-    #     if time > 26:
-    #         continue
-    #
-    #     if p_idx is not None:
-    #         if path1 != '':
-    #             path1 += '->'
-    #         path1 += graph[p_idx][0]
-    #
-    #     if e_idx is not None:
-    #         if path2 != '':
-    #             path2 += '->'
-    #         path2 += graph[e_idx][0]
-    #
-    #     person_opens = p_idx is not None and rem_p == 0
-    #     elephant_opens = e_idx is not None and rem_e == 0
-    #
-    #     if person_opens:
-    #         pressure += graph[p_idx][2]
-    #
-    #     #
-    #     # if p_idx == 5 and e_idx == 2:
-    #     #     print(
-    #     #         f'{id}: AFTER OPEN VALVE: == Minute {time} == person_path={path1}, elephant_path={path2}, flow={flow}, until_26_flow={flow + (26 - time) * pressure}, pressure={pressure}, bitmask_rem={bitmask_rem}')
-    #
-    #     if elephant_opens:
-    #         pressure += graph[e_idx][2]
-    #
-    #     # print(
-    #     #     f'{id}: == Minute {time} == person_path={path1}, elephant_path={path2}, remaining_person={rem_p}, remaining_elephant={rem_e} flow={flow}, until_26_flow={flow + (26 - time) * pressure}, pressure={pressure}, bitmask_rem={bitmask_rem}')
-    #
-    #     # dp(time, last_node, remaining_bitmask) = memo
-    #
-    #     total_pressure = flow + (26 - time) * pressure
-    #
-    #     if id % 1_000_000 == 0:
-    #         print(
-    #             f'{id}: == Minute {time} :: person_path={path1}, elephant_path={path2}, remaining_time_person={rem_p}, remaining_time_elephant={rem_e} flow={flow}, until_26_flow={flow + (26 - time) * pressure}, pressure={pressure}, bitmask_rem={bitmask_rem}')
-    #         print(ans)
-    #
-    #     ans = max(ans, total_pressure)
-    #
-    #     if path1.startswith('JJ') and path2.startswith('DD->HH->HH->EE'):
-    #         print(
-    #             f'== Minute {time} :: person_path={path1}, elephant_path={path2}, remaining_time_person={rem_p}, remaining_time_elephant={rem_e} flow={flow}, until_26_flow={flow + (26 - time) * pressure}, pressure={pressure}, bitmask_rem={bitmask_rem}')
-    #
-    #     none_replacement = [(None, math.inf)]
-    #
-    #     if rem_p > 0:
-    #         person_next = [(p_idx, rem_p)]
-    #     else:
-    #         person_next = [(i, t) for i, t in graph[p_idx][3] if
-    #                        not (bitmask_rem & (1 << i))] if p_idx is not None else []
-    #
-    #     if rem_e > 0:
-    #         elephant_next = [(e_idx, rem_e)]
-    #     else:
-    #         elephant_next = [(i, t) for i, t in graph[e_idx][3] if
-    #                          not (bitmask_rem & (1 << i))] if e_idx is not None else []
-    #
-    #     if not person_next and not elephant_next:
-    #         continue
-    #
-    #     if not person_next:
-    #         person_next = none_replacement
-    #
-    #     if not elephant_next:
-    #         elephant_next = none_replacement
-    #
-    #     # if path1.startswith('JJ->JJ->BB->CC') and path2.startswith('DD->HH->HH->EE'):
-    #     #     print(person_next, elephant_next)
-    #
-    #     for (i, t1), (j, t2) in product(person_next, elephant_next):
-    #         t = min(t1, t2)
-    #         next_time = time + t
-    #         if i != j and next_time <= 26:
-    #             mask_i = (1 << i) if i is not None else 0
-    #             mask_j = (1 << j) if j is not None else 0
-    #
-    #             next = (i, j, next_time, flow + pressure * t, pressure, t1 - t, t2 - t, bitmask_rem | mask_i | mask_j,
-    #                     path1, path2)
-    #             # if path1.startswith('JJ->JJ->BB->CC') and path2.startswith('DD->HH->HH->EE'):
-    #             #     print('Next:', next)
-    #             q.append(next)
+    dp = {}
 
+    # probably t + 1 implementation with dp might work as last resort or matevskial is genius
+
+    # for i, person in enumerate(graph):
+    #     for j, elephant in enumerate(graph):
+    #         if i != j:
+    #             # p_idx, e_idx, time, time_spent, pressure, rem_p, rem_e, bitmask_rem, valve_p, valve_e, path1, path2
+    #             t = min(person[1], elephant[1])
+    #             cost = find_max_remaining_cost(
+    #                 (i, j, t, t, 0, person[1] - t, elephant[1] - t, mask | 1 << i | 1 << j), graph, dp)
+    #             ans = max(ans, cost)
+
+    ans = min_time(('AA', 'AA', 0, 0, mask), graph, dp, map_to_idx)
     return ans
 
 
