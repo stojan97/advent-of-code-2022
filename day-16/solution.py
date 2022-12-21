@@ -5,14 +5,14 @@ from heapq import heappop, heappush, heapify
 
 
 def shortest_path_to_other_for_valve(valve, graph):
-    pq = [(0, valve, '')]
+    pq = [(0, valve)]
     heapify(pq)
     visited = set()
     d = {v: math.inf for v in graph.keys()}
     d[valve] = 0
 
     while pq:
-        dist, current_valve, path = heappop(pq)
+        dist, current_valve = heappop(pq)
 
         if current_valve in visited:
             continue
@@ -23,7 +23,7 @@ def shortest_path_to_other_for_valve(valve, graph):
             next_dist = dist + 1
             if next_dist < d[v]:
                 d[v] = next_dist
-                heappush(pq, (next_dist, v, path))
+                heappush(pq, (next_dist, v))
 
     return valve, d['AA'], d
 
