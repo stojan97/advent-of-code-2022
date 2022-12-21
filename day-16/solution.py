@@ -1,9 +1,7 @@
 import math
 import re
 import time
-from collections import deque
 from heapq import heappop, heappush, heapify
-from itertools import permutations, product
 
 
 def shortest_path_to_other_for_valve(valve, graph):
@@ -55,14 +53,14 @@ def get_input():
     # map node -> index in final graph
     final_graph = []
     for i in range(len(shortest_paths)):
-        adj = []
+        adj = {}
         valve = shortest_paths[i][0]
         start_time = shortest_paths[i][1]
         min_dist = shortest_paths[i][2]
         pressure = graph[valve][0]
         for v, j in map_to_idx.items():
             if i != j and min_dist[v] != math.inf:
-                adj.append((j, min_dist[v] + 1))
+                adj[j] = min_dist[v] + 1
 
         final_graph.append((valve, start_time + 1, pressure, adj))
 
@@ -70,148 +68,71 @@ def get_input():
     return final_graph
 
 
-def find_max_remaining_cost_p1(current, graph):
-    idx, time, time_spent, pressure, bitmask = current
+def find_max_remaining_cost_p1(current, graph, dp):
+    idx, time, source, pressure, bitmask = current
 
+    memo = idx, time, source, bitmask
+
+    if memo in dp:
+        return dp[memo]
+
+    time_spent = graph[source][3][idx] if source != -1 else graph[idx][1]
     flow = time_spent * pressure
     pressure += graph[idx][2]
 
     ans = flow + (30 - time) * pressure
 
     # visit adj
-    for i, t in graph[idx][3]:
+    for i, t in graph[idx][3].items():
         next_time = time + t
         if not (bitmask & (1 << i)) and next_time <= 30:
             ans = max(ans,
-                      flow + find_max_remaining_cost_p1((i, next_time, t, pressure, bitmask | 1 << i), graph))
+                      flow + find_max_remaining_cost_p1((i, next_time, idx, pressure, bitmask | 1 << i), graph, dp))
 
+    dp[memo] = ans
     return ans
 
 
 def part1(graph):
     mask = 1 << len(graph)
     ans = 0
+    dp = {}
     for idx, node in enumerate(graph):
-        ans = max(ans, find_max_remaining_cost_p1((idx, node[1], node[1], 0, mask | 1 << idx), graph))
+        ans = max(ans, find_max_remaining_cost_p1((idx, node[1], -1, 0, mask | 1 << idx), graph, dp))
 
     return ans
-
-
-id = 0
-az = 0
 
 
 def find_max_remaining_cost(current, graph, dp):
-    p_idx, e_idx, time, time_left, pressure, rem_p, rem_e, bitmask_covered = current
+    idx, time, source, pressure, bitmask, is_person = current
 
-    memo = (p_idx, e_idx, time_left, bitmask_covered)
-
-    global id
-    global az
-
-    # flow until this minute
-    flow = time_left * pressure
+    memo = idx, time, source, pressure, bitmask, is_person
 
     if memo in dp:
-        if id % 500_000 == 0:
-            print(f'DP HIT {id} :: size={len(dp)}, ans={az}')
-        id += 1
         return dp[memo]
 
-    person_opens = p_idx is not None and rem_p == 0
-    elephant_opens = e_idx is not None and rem_e == 0
+    time_spent = graph[source][3][idx] if source != -1 else graph[idx][1]
+    flow = time_spent * pressure
+    pressure += graph[idx][2]
 
-    # calculate pressure for next flow
-
-    if person_opens:
-        pressure += graph[p_idx][2]
-
-    if elephant_opens:
-        pressure += graph[e_idx][2]
-
-    # calculate until the end using next pressure (t = 24 -> next : 25, 26)
     ans = (26 - time) * pressure
+    until_end = ans
 
-    finished = [(None, math.inf)]
-
-    if rem_p > 0:
-        person_next = [(p_idx, rem_p)]
-    else:
-        person_next = [(i, t) for i, t in graph[p_idx][3] if
-                       not (bitmask_covered & (1 << i))] if p_idx is not None else []
-
-    if rem_e > 0:
-        elephant_next = [(e_idx, rem_e)]
-    else:
-        elephant_next = [(i, t) for i, t in graph[e_idx][3] if
-                         not (bitmask_covered & (1 << i))] if e_idx is not None else []
-
-    if not person_next and not elephant_next:
-        ans = flow + ans
-        dp[memo] = ans
-        az = max(az, ans)
-        return ans
-
-    if not person_next:
-        person_next = finished
-
-    if not elephant_next:
-        elephant_next = finished
-
-    # if path1.startswith('JJ->JJ->BB->CC') and path2.startswith('DD->HH->HH->EE'):
-    #     print(person_next, elephant_next)
-
-    for (i, t1), (j, t2) in product(person_next, elephant_next):
-        t = min(t1, t2)
-        next_time = time + t
-        if i != j and next_time <= 26:
-            mask_i = (1 << i) if i is not None else 0
-            mask_j = (1 << j) if j is not None else 0
-            next = (i, j, next_time, t, pressure, t1 - t, t2 - t, bitmask_covered | mask_i | mask_j)
-            ans = max(ans, find_max_remaining_cost(next, graph, dp))
-
-    # if path1.startswith('JJ') and path2.startswith('DD'):
-    #
-    #     print(
-    #         f'== Minute {time} RES={app} :: person_path={path1}, elephant_path={path2}, remaining_time_person={rem_p}, remaining_time_elephant={rem_e} flow={flow}, until_26_flow={ans}, pressure={pressure}, bitmask_covered={bitmask_covered}')
-
-    # f(current) = flow + f(adj, t + 1)
-    # f(person_node, elephant_node, bitmask, t) = last_node with next set bitmask, at time t
-    ans = flow + ans
-    dp[memo] = ans
-    az = max(az, ans)
-    return ans
-
-
-def find_max_remaining_cost_seq(current, graph, dp):
-    # global id
-    # global az
-    # id += 1
-    # if id % 500_000 == 0:
-    #     print(f'id={id}, ans={az}')
-
-    idx, time, bitmask, is_person = current
-
-    if current in dp:
-        return dp[current]
-
-    pressure = graph[idx][2]
-    flow = (26 - time) * pressure
-    ans = 0
-
-    # visit adj
-    for i, t in graph[idx][3]:
+    for i, t in graph[idx][3].items():
         next_time = time + t
         if not (bitmask & (1 << i)) and next_time <= 26:
-            ans = max(ans, find_max_remaining_cost_seq((i, next_time, bitmask | 1 << i, is_person), graph, dp))
+            ans = max(ans,
+                      find_max_remaining_cost((i, next_time, idx, pressure, bitmask | 1 << i, is_person), graph, dp))
 
     if is_person:
         for i, node in enumerate(graph):
             if not (bitmask & (1 << i)):
-                ans = max(ans, find_max_remaining_cost_seq((i, node[1], bitmask | 1 << i, False), graph, dp))
+                remaining_cost = find_max_remaining_cost((i, node[1], -1, 0, bitmask | 1 << i, False), graph, dp)
+                ans = max(ans, until_end + remaining_cost)
 
-    dp[current] = flow + ans
-    return flow + ans
+    total = flow + ans
+    dp[memo] = total
+    return total
 
 
 def part2(graph):
@@ -223,22 +144,14 @@ def part2(graph):
     dp = {}
 
     for idx, node in enumerate(graph):
-        ans = max(ans, find_max_remaining_cost_seq((idx, node[1], mask | 1 << idx, True), graph, dp))
+        ans = max(ans, find_max_remaining_cost((idx, node[1], -1, 0, mask | 1 << idx, True), graph, dp))
 
     return ans
-
-    # for i, person in enumerate(graph):
-    #     for j, elephant in enumerate(graph):
-    #         if i != j:
-    #             # p_idx, e_idx, time, time_spent, pressure, rem_p, rem_e, bitmask_rem, valve_p, valve_e, path1, path2
-    #             t = min(person[1], elephant[1])
-    #             cost = find_max_remaining_cost(
-    #                 (i, j, t, t, 0, person[1] - t, elephant[1] - t, mask | 1 << i | 1 << j), graph, dp)
-    #             ans = max(ans, cost)
 
 
 inp = get_input()
 start = time.time()
-# print('Part 1:', part1(inp))
+print('Part 1:', part1(inp))
+# 1 min 30 secs for worse inputs
 print('Part 2:', part2(inp))
 print(time.time() - start)
