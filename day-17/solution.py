@@ -42,8 +42,6 @@ def part1(moves):
     switch_shape = True
     move_index = 0
 
-    max_falling = 2022
-
     while True:
         if stopped_falling == 2022:
             break
