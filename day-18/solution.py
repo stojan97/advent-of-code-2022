@@ -1,3 +1,4 @@
+import math
 import time
 from collections import deque
 
@@ -27,14 +28,21 @@ def part1(cubes):
     return c
 
 
-def find_trapped(cube, cubes, surface_area, trapped, free_air):
+def inside(cube, bounds):
+    x = bounds[0][0] <= cube[0] <= bounds[0][1]
+    y = bounds[1][0] <= cube[1] <= bounds[1][1]
+    z = bounds[2][0] <= cube[2] <= bounds[2][1]
+    return x and y and z
+
+
+def find_trapped(cube, cubes, trapped, bounds):
     stack = deque([])
     stack.append(cube)
     vis = set()
 
     while stack:
         top = stack.pop()
-        if len(stack) >= surface_area:
+        if not inside(top, bounds):
             return True, vis
 
         vis.add(top)
@@ -45,15 +53,26 @@ def find_trapped(cube, cubes, surface_area, trapped, free_air):
 
     return False, vis
 
+
 def part2(cubes):
-    surface_area = part1(cubes)
     trapped = set()
     free_air = set()
+    bounds = [[math.inf, -math.inf], [math.inf, -math.inf], [math.inf, -math.inf]]
+    for cube in cubes:
+        # x
+        bounds[0][0] = min(bounds[0][0], cube[0])
+        bounds[0][1] = max(bounds[0][1], cube[0])
+        # y
+        bounds[1][0] = min(bounds[1][0], cube[1])
+        bounds[1][1] = max(bounds[1][1], cube[1])
+        # z
+        bounds[2][0] = min(bounds[2][0], cube[2])
+        bounds[2][1] = max(bounds[2][1], cube[2])
 
     for cube in cubes:
         for adj_cube in get_adj_cubes(cube):
             if adj_cube not in cubes and adj_cube not in free_air:
-                is_free, s = find_trapped(adj_cube, cubes, surface_area, trapped, free_air)
+                is_free, s = find_trapped(adj_cube, cubes, trapped, bounds)
                 if is_free:
                     free_air |= s
                 else:
