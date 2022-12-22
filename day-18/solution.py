@@ -43,7 +43,7 @@ def find_trapped(cube, cubes, trapped, bounds):
     while stack:
         top = stack.pop()
         if not inside(top, bounds):
-            return True, vis
+            return set()
 
         vis.add(top)
 
@@ -51,12 +51,11 @@ def find_trapped(cube, cubes, trapped, bounds):
             if adj_cube not in cubes and adj_cube not in vis and adj_cube not in trapped:
                 stack.append(adj_cube)
 
-    return False, vis
+    return vis
 
 
 def part2(cubes):
     trapped = set()
-    free_air = set()
     bounds = [[math.inf, -math.inf], [math.inf, -math.inf], [math.inf, -math.inf]]
     for cube in cubes:
         # x
@@ -71,12 +70,9 @@ def part2(cubes):
 
     for cube in cubes:
         for adj_cube in get_adj_cubes(cube):
-            if adj_cube not in cubes and adj_cube not in free_air:
-                is_free, s = find_trapped(adj_cube, cubes, trapped, bounds)
-                if is_free:
-                    free_air |= s
-                else:
-                    trapped |= s
+            if adj_cube not in cubes:
+                s = find_trapped(adj_cube, cubes, trapped, bounds)
+                trapped |= s
 
     t = 0
     for cube in cubes:
