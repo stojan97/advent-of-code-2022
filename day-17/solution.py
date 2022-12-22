@@ -117,7 +117,6 @@ def part2(moves):
     stopped_shapes = 0
     inside_period = False
     init_period_shape_diff = 0
-    period_shape_diff = 0
     period_height = 0
 
     while True:
