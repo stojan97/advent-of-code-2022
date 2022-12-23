@@ -137,8 +137,6 @@ def find_max_remaining_cost(current, graph, dp):
 
 def part2(graph):
     mask = 1 << len(graph)
-    full_mask = (1 << (len(graph) + 1)) - 1
-    print(mask, full_mask)
     ans = 0
     print('Graph', graph)
     dp = {}
