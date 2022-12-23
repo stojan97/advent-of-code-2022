@@ -38,7 +38,7 @@ def get_input():
             adj = [i.split(',')[0] for i in split[9:]]
             graph[node] = (flow, adj)
 
-    # init planar graph
+    # init complete graph
     shortest_paths = []
     map_to_idx = {}
 
@@ -50,7 +50,7 @@ def get_input():
             map_to_idx[key] = idx
             idx += 1
 
-    # map node -> index in final graph
+    # prepare simplified graph
     final_graph = []
     for i in range(len(shortest_paths)):
         adj = {}
