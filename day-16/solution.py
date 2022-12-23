@@ -152,6 +152,6 @@ def part2(graph):
 inp = get_input()
 start = time.time()
 print('Part 1:', part1(inp))
-# 1 min 30 secs for worse inputs, and 20 secs for good inputs
+# Part2: 1 min 30 secs for worse inputs, and 20 secs for good inputs
 print('Part 2:', part2(inp))
 print(time.time() - start)
