@@ -65,7 +65,8 @@ def part2(monkeys):
     monkeys['root'] = False, None, lambda a, b: f'{a} - {b}', root[3], root[4]
     expression = expand_expression('root', monkeys)
     solution = eval(expression, {'j': 1j})
-    ans = int(abs(solution.real / solution.imag))
+    # ax + b = 0 => x = -b/a
+    ans = int(solution.real / -solution.imag)
     return ans
 
 inp = get_input()
