@@ -95,13 +95,13 @@ def max_state(s1, s2):
     return -1 if s1[0][::-1] > s2[0][::-1] else 1
 
 
-def solve_rock(state, dp, LIMIT, costs, memo, rock_type, init):
+def solve_rock(state, seen, LIMIT, costs, memo, rock_type, init):
     robots, rocks, time = state
 
     global counter
 
     if counter % 500_000 == 0:
-        print(f'hits={counter} === State={state}, dp={len(dp)}')
+        print(f'hits={counter} === State={state}, dp={len(seen)}')
     counter += 1
 
     if init == rock_type:
@@ -122,18 +122,18 @@ def solve_rock(state, dp, LIMIT, costs, memo, rock_type, init):
         if next_time <= LIMIT:
             r, c = get_next_state(i, robots, rocks, costs[i], time_increment)
             next_state = (r, c, next_time)
-            if next_state not in dp:
-                dp.add(next_state)
-                solve_rock(next_state, dp, LIMIT, costs, memo, rock_type, rock_type)
+            if next_state not in seen:
+                seen.add(next_state)
+                solve_rock(next_state, seen, LIMIT, costs, memo, rock_type, rock_type)
 
 
-def solve_geode(state, dp, LIMIT, costs, init):
+def solve_geode(state, seen, LIMIT, costs, init):
     robots, rocks, time = state
 
     global counter
 
     if counter % 500_000 == 0:
-        print(f'===== geode-collecting robot ===== hits={counter} === State={state}, dp={len(dp)}')
+        print(f'===== geode-collecting robot ===== hits={counter} === State={state}, dp={len(seen)}')
     counter += 1
 
     geode = rocks[3] + (LIMIT - time) * robots[3]
@@ -154,9 +154,9 @@ def solve_geode(state, dp, LIMIT, costs, init):
         if next_time <= LIMIT:
             r, c = get_next_state(i, robots, rocks, costs[i], time_increment)
             next_state = (r, c, next_time)
-            if next_state not in dp:
-                dp.add(next_state)
-                solve_geode(next_state, dp, LIMIT, costs, False)
+            if next_state not in seen:
+                seen.add(next_state)
+                solve_geode(next_state, seen, LIMIT, costs, False)
 
 
 def solve_part(blueprints, LIMIT, s, f):
@@ -173,9 +173,9 @@ def solve_part(blueprints, LIMIT, s, f):
                 memo[j][t] = []
 
         print('========== ore collecting robot ===========')
-        dp = set()
+        seen = set()
         counter = 0
-        solve_rock(((1, 0, 0, 0), (0, 0, 0, 0), 1), dp, LIMIT, costs, memo, 0, 0)
+        solve_rock(((1, 0, 0, 0), (0, 0, 0, 0), 1), seen, LIMIT, costs, memo, 0, 0)
 
         print()
         counter = 0
@@ -184,7 +184,7 @@ def solve_part(blueprints, LIMIT, s, f):
             sliced = sorted(c, key=cmp_to_key(max_state))[:(t * t)]
             print(f'Time {t} :: REAL_LENGTH={len(c)} ==== {len(sliced)}')
             for robots, rocks in sliced:
-                solve_rock((robots, rocks, t), dp, LIMIT, costs, memo, 1, 0)
+                solve_rock((robots, rocks, t), seen, LIMIT, costs, memo, 1, 0)
 
         print()
         counter = 0
@@ -193,7 +193,7 @@ def solve_part(blueprints, LIMIT, s, f):
             sliced = sorted(c, key=cmp_to_key(max_state))[:(t * t)]
             print(f'Time {t} :: REAL_LENGTH={len(c)} ==== {len(sliced)}')
             for robots, rocks in sliced:
-                solve_rock((robots, rocks, t), dp, LIMIT, costs, memo, 2, 1)
+                solve_rock((robots, rocks, t), seen, LIMIT, costs, memo, 2, 1)
 
         print()
         counter = 0
@@ -202,7 +202,7 @@ def solve_part(blueprints, LIMIT, s, f):
             sliced = sorted(c, key=cmp_to_key(max_state))[:(t * t)]
             print(f'Time {t} :: REAL_LENGTH={len(c)} ==== {len(sliced)}')
             for robots, rocks in sliced:
-                solve_geode((robots, rocks, t), dp, LIMIT, costs, True)
+                solve_geode((robots, rocks, t), seen, LIMIT, costs, True)
 
         print()
         print('========== geode Results ===========')
