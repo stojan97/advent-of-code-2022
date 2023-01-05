@@ -199,7 +199,6 @@ def solve_part(blueprints, LIMIT, s, f):
         counter = 0
         print('========== geode collecting robot starting from obsidian ===========')
         for t, c in memo[2].items():
-            # print(f'Time {t} ==== {len(c)}')
             sliced = sorted(c, key=cmp_to_key(max_state))[:(t * t)]
             print(f'Time {t} :: REAL_LENGTH={len(c)} ==== {len(sliced)}')
             for robots, rocks in sliced:
